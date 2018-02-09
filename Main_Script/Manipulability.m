@@ -2,8 +2,8 @@
 % Author : Louis Hawley
 % Date : 2018/02/08
 %
-% Simple script to visualize the manipulability of the robot in a current 
-% configuration
+% Simple script to visualize the manipulability ellipsoids of the robot
+% in a current configuration
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clc; close all; clear variables;
@@ -11,28 +11,45 @@ clc; close all; clear variables;
 %% Load robot model
 run mdl_fanuc10l.m
 Robot = R;
-Robot.teach()
-
-while(1)
-%% Set robot in a random position
-q = Robot.getpos();
-J = Robot.jacob0(q);
-J_pos = J(1:3,:);
-El_pos = J_pos*J_pos';
-J_w = J(4:6,:);
-El_w = J_w*J_w';
-% Normalize the matrix
-El_pos = El_pos/(norm(El_pos(1,:)) +  norm(El_pos(2,:)) + norm(El_pos(3,:)));
-El_w = El_w/(norm(El_w(1,:)) +  norm(El_w(2,:)) + norm(El_w(3,:)));
-
-% Get the position of the ellipse (EE)
-T_EE = Robot.fkine(q);
-C = T_EE(1:3,4);
-
+q = Robot.theta;
 % Plot the robot with velocity ellipsoid
-h = plot_ellipse(El_pos,C,'edgecolor','r');
-h2 = plot_ellipse(El_w,C,'edgecolor','b');
-disp('Press key to continue')
-pause;
-delete(h);delete(h2);
+h = plot_ellipse(0.1*eye(3),zeros(1,3),'edgecolor','r');
+h2 = plot_ellipse(0.1*eye(3),zeros(1,3),'edgecolor','b');
+h3 = plot_ellipse(0.1*eye(3),zeros(1,3),'edgecolor','k');
+legend('Velocity','Angular vel','Force');
+Robot.teach()
+run_ = 1;
+while(run_)
+    %% Get robot position from teach interface
+    delete(h);delete(h2);delete(h3);
+    q = Robot.getpos();
+    J = Robot.jacob0(q);
+    J_pos = J(1:3,:);
+    El_pos = J_pos*J_pos';
+    J_w = J(4:6,:);
+    El_w = J_w*J_w';
+    El_force = inv(El_pos);
+    % Normalize the matrix
+    El_pos = El_pos/(norm(El_pos(1,:)) +  norm(El_pos(2,:)) + norm(El_pos(3,:)));
+    El_w = El_w/(norm(El_w(1,:)) +  norm(El_w(2,:)) + norm(El_w(3,:)));
+    El_force = El_force/(norm(El_force(1,:)) +  norm(El_force(2,:)) + norm(El_force(3,:)));
+    % Get the position of the ellipse (EE)
+    T_EE = Robot.fkine(q);
+    C = T_EE(1:3,4);
+    % Plot the robot with velocity ellipsoid
+    h = plot_ellipse(El_pos,C,'edgecolor','r');
+    h2 = plot_ellipse(El_w,C,'edgecolor','b');
+    h3 = plot_ellipse(El_force,C,'edgecolor','k');
+    error = 0;
+    while(error < 0.1)
+        pause(1);
+        q_last = q;
+        try
+            q = Robot.getpos();
+        catch
+            run_ = 0;
+            break;
+        end
+        error = norm(q_last - q);
+    end
 end
