@@ -31,7 +31,7 @@ Robot.plot(q);
 for I=1:traj_element
    % Position command
    command(1:3) = [cos_angle*pos(1) - sin_angle*pos(2), sin_angle*pos(1) + cos_angle*pos(2), Pos_init(3) - 0.5*(sin(rot_inc*I))];
-   q = q + (JacobianTransposeIK(Robot, command', q))';
+   q = q + (JacobianTransposeIK(Robot, command', q, 0))';
    Robot.plot(q);
    pause(0.05)
    pos = command;

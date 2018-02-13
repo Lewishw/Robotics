@@ -33,7 +33,7 @@ ori_des = [0 0 -1; 0 1 0; 1 0 0];
 for I=1:traj_element
    % Position command
    command(1:3) = [cos_angle*pos(1) - sin_angle*pos(2), sin_angle*pos(1) + cos_angle*pos(2), Pos_init(3) - 0.5*(sin(rot_inc*I))];
-   q = q + (NullSpaceIK(Robot, command', ori_des, q))';
+   q = q + (NullSpaceIK(Robot, command', T_init(1:3,1:3), q))';
    Robot.plot(q);
    pause(0.05)
    pos = command;
