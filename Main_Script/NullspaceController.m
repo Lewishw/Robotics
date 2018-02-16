@@ -9,14 +9,14 @@
 clc; close all; clear variables;
 
 %% Load robot model
-run mdl_fanuc10l.m
+run mdl_fanuc10L.m
 Robot = R;
 
 %% Define a Trajectory
 % We simply want to rotate around the base
 traj_element = 100;
 T_init = Robot.fkine(q0);
-Pos_init = T_init(1:3,4);
+Pos_init = T_init.t;
 rot_inc = pi/traj_element;
 q = q0;
 pos = Pos_init;
@@ -33,14 +33,14 @@ ori_des = [0 0 -1; 0 1 0; 1 0 0];
 for I=1:traj_element
    % Position command
    command(1:3) = [cos_angle*pos(1) - sin_angle*pos(2), sin_angle*pos(1) + cos_angle*pos(2), Pos_init(3) - 0.5*(sin(rot_inc*I))];
-   q = q + (NullSpaceIK(Robot, command', T_init(1:3,1:3), q))';
+   q = q + (NullSpaceIK(Robot, command', T_init.R, q))';
    Robot.plot(q);
    pause(0.05)
    pos = command;
    command_plot(:, I) = pos;
    result = Robot.fkine(q);
-   result_plot(:,I) = result(1:3,4);
-   error2 = rotational_error(ori_des,result(1:3,1:3));
+   result_plot(:,I) = result.t;
+   error2 = rotational_error(ori_des,result.R);
    RotError_plot(:,I) = error2;
 end
 

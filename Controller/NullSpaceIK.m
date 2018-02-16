@@ -2,8 +2,8 @@ function [ q_ ] = NullSpaceIK(  robot, xyz_command, ori_des, q )
 %OPENLOOPIK Summary of this function goes here
 %   Detailed explanation goes here
 T_ee = robot.fkine(q);
-error = xyz_command - T_ee(1:3,4);
-error2 = rotational_error(ori_des,T_ee(1:3,1:3));
+error = xyz_command - T_ee.t;
+error2 = rotational_error(ori_des,T_ee.R);
 
 J_q = robot.jacob0(q);
 J_pos = J_q(1:3,:);

@@ -29,12 +29,11 @@ end
 error = 1;
 counter = 1;
 eps = 0.01
-while(error > eps || counter < 5000)  
+while(error > eps && counter < 5000)  
     A_est = A_est + (inv(command_vect'*command_vect)*command_vect' * error_vect')';
     error_vect = measurement - A_est*command_vect';
     error = sum(error_vect);
-    inv(command_vect'*command_vect)*command_vect' * error_vect'
-    counter = counter + 1
+    counter = counter + 1;
 end
 
 A_est

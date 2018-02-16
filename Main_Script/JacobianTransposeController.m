@@ -8,14 +8,14 @@
 clc; close all; clear variables;
 
 %% Load robot model
-run mdl_fanuc10l.m
+run mdl_fanuc10L.m
 Robot = R;
-
+eps = 0.005;
 %% Define a Trajectory
 % We simply want to rotate around the base
 traj_element = 100;
 T_init = Robot.fkine(q0);
-Pos_init = T_init(1:3,4);
+Pos_init = T_init.t;
 rot_inc = pi/traj_element;
 q = q0;
 pos = Pos_init;
@@ -31,13 +31,13 @@ Robot.plot(q);
 for I=1:traj_element
    % Position command
    command(1:3) = [cos_angle*pos(1) - sin_angle*pos(2), sin_angle*pos(1) + cos_angle*pos(2), Pos_init(3) - 0.5*(sin(rot_inc*I))];
-   q = q + (JacobianTransposeIK(Robot, command', q, 0))';
+   q = q + (JacobianTransposeIK(Robot, command', q, 0,eps))';
    Robot.plot(q);
    pause(0.05)
    pos = command;
    command_plot(:, I) = pos;
    result = Robot.fkine(q);
-   result_plot(:,I) = result(1:3,4);
+   result_plot(:,I) = result.t';
 end
 
 figure

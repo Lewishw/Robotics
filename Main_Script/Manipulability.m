@@ -9,15 +9,15 @@
 clc; close all; clear variables;
 
 %% Load robot model
-run mdl_fanuc10l.m
+run mdl_fanuc10L.m
+
 Robot = R;
 q = Robot.theta;
 % Plot the robot with velocity ellipsoid
 h = plot_ellipse(0.1*eye(3),zeros(1,3),'edgecolor','r');
 h2 = plot_ellipse(0.1*eye(3),zeros(1,3),'edgecolor','b');
 h3 = plot_ellipse(0.1*eye(3),zeros(1,3),'edgecolor','k');
-legend('Velocity','Angular vel','Force');
-Robot.teach()
+Robot.teach(q)
 run_ = 1;
 while(run_)
     %% Get robot position from teach interface
@@ -35,11 +35,12 @@ while(run_)
     El_force = El_force/(norm(El_force(1,:)) +  norm(El_force(2,:)) + norm(El_force(3,:)));
     % Get the position of the ellipse (EE)
     T_EE = Robot.fkine(q);
-    C = T_EE(1:3,4);
+    C = T_EE.t;
     % Plot the robot with velocity ellipsoid
     h = plot_ellipse(El_pos,C,'edgecolor','r');
     h2 = plot_ellipse(El_w,C,'edgecolor','b');
     h3 = plot_ellipse(El_force,C,'edgecolor','k');
+    legend([h, h2, h3],'Velocity','Angular vel','Force');
     error = 0;
     while(error < 0.1)
         pause(1);
